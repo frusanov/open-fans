@@ -8,7 +8,11 @@
     "dev": "remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "mkdir -p tmp && drizzle-kit push --force",
+    "db:studio": "drizzle-kit studio",
+    "db:reset": "rm -rf ./tmp && mkdir -p tmp && drizzle-kit push --force"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.3.5",
@@ -20,11 +24,13 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.3",
+    "drizzle-zod": "^0.8.2",
     "isbot": "^4.1.0",
     "lucide-react": "^0.525.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.0.10"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.16.8",
