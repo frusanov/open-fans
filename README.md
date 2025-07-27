@@ -2,6 +2,8 @@
 
 A **censorship-resistant, open-protocol content publishing engine** for web and federated/social protocols. Supports any media type, creator monetization, and federates via ActivityPub, AtProto, and RSS/Atom.
 
+> **⚠️ Early Development**: This is currently a foundational setup with basic infrastructure. Most features described in the vision are planned but not yet implemented.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -10,30 +12,30 @@ A **censorship-resistant, open-protocol content publishing engine** for web and 
 
 ### Installation (30 seconds)
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/your-username/open-fans
 cd open-fans
 npm install
 npm run db:push
 npm run dev
 ```
 
-Visit **http://localhost:3000** - frontend and API ready!
+Visit **http://localhost:3000** - basic React Router app is ready!
 
 ## 🏗️ Architecture
 
 **Unified Development Server** (Single Port 3000):
 ```
 Hono Server → {
-  Frontend: Remix SSR
-  API: /api/* endpoints  
+  Frontend: React Router 7 SSR
+  Static Assets: /static/* endpoints  
   Database: PGlite (embedded PostgreSQL)
   HMR: Real-time updates for both frontend and API
 }
 ```
 
 **Technology Stack:**
-- Frontend: React + Remix + TailwindCSS v4
-- Backend: Hono + Drizzle ORM + JWT auth
+- Frontend: React + React Router 7 + TailwindCSS v4
+- Backend: Hono + Drizzle ORM
 - Database: PGlite (dev) → PostgreSQL (prod)
 - Build: Vite + esbuild
 
@@ -45,34 +47,40 @@ npm run dev              # Start unified dev server
 npm run db:push         # Apply database schema changes
 npm run db:studio       # Open database browser (port 4983)
 npm run build           # Production build
+npm run typecheck       # TypeScript + React Router type generation
 ```
 
-### What's Working
-- ✅ User authentication (register, login, JWT)
-- ✅ Hot module replacement (frontend + API)
-- ✅ Database with migrations (PGlite + Drizzle)
-- ✅ API endpoints with rate limiting
+### What's Actually Working
+- ✅ React Router 7 with SSR and HMR
+- ✅ Hono server with middleware system
+- ✅ PGlite database with Drizzle ORM
+- ✅ Users table schema (no auth yet)
+- ✅ Static file serving
 - ✅ TypeScript throughout
+- ✅ Development hot reload
 
-### Current API Endpoints
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/me` - Current user
-- `GET /api/users/:id` - Get user by ID
-- `GET /health` - Health check
+### Current Implementation Status
+- **Database**: Users table schema exists
+- **Server**: Basic Hono server with static file serving
+- **Frontend**: Default React Router welcome page
+- **API**: No endpoints implemented yet
+- **Authentication**: Dependencies installed but not implemented
+- **Content Management**: Not implemented
+- **Federation**: Not implemented
 
 ## 📚 Documentation
 
 - [**DEVELOPMENT.md**](./DEVELOPMENT.md) - Complete setup and dev guide
-- [**API.md**](./API.md) - API endpoint documentation  
+- [**API.md**](./API.md) - Current minimal API documentation  
 - [**ROADMAP.md**](./ROADMAP.md) - Implementation roadmap
 
-## 🎯 Next Steps
+## 🎯 Immediate Next Steps
 
-1. **Posts Schema**: Content creation data model
-2. **Frontend Auth**: Login/register UI components
-3. **File Upload**: Media handling infrastructure  
-4. **Content Creation**: Post editor interface
+1. **Authentication System**: Implement JWT-based user auth (register/login)
+2. **Posts Schema**: Design and implement content data model
+3. **API Endpoints**: Build REST API for user and content management
+4. **Frontend Auth**: Login/register UI components
+5. **Content Creation**: Basic post creation interface
 
 ## 🚀 Vision
 
@@ -91,6 +99,9 @@ The **WordPress of content creation** - an open, self-hostable platform putting 
 2. Follow TypeScript best practices
 3. Test with `npm run lint && npm run typecheck`
 4. Submit pull request
+
+### Development Status
+This project is in **early development**. The foundation is solid with React Router 7, Hono, and PGlite, but most user-facing features are not yet implemented. Check the [ROADMAP.md](./ROADMAP.md) for planned features and implementation timeline.
 
 ## 📄 License
 

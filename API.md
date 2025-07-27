@@ -1,458 +1,290 @@
 # API Documentation
 
-Complete API reference for Open Fans Platform - RESTful endpoints for authentication, user management, content, and media.
+Current API status for Open Fans Platform - React Router 7 application with minimal Hono server backend.
+
+> **⚠️ Early Development**: This API is currently minimal with only basic static file serving. Most endpoints described in the roadmap are not yet implemented.
 
 ## 🌐 Base Information
 
 ### Base URL
-- **Development**: `http://localhost:3000/api`
-- **Production**: `https://your-domain.com/api`
+- **Development**: `http://localhost:3000`
+- **Production**: `https://your-domain.com` (when deployed)
 
-### Authentication
-- **Type**: JWT Bearer tokens
-- **Header**: `Authorization: Bearer <token>`
-- **Expiry**: 7 days (configurable)
+### Current Architecture
+- **Frontend**: React Router 7 with SSR
+- **Backend**: Hono server with middleware system
+- **Database**: PGlite (development) / PostgreSQL (production planned)
+- **Build**: Vite with React Router integration
 
-### Response Format
-All endpoints return JSON with consistent structure:
-```json
-{
-  "success": true,
-  "data": { /* response data */ },
-  "error": null
-}
-```
+## 🛠️ Current Implementation
 
-Error responses:
-```json
-{
-  "success": false,
-  "data": null,
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human readable message"
-  }
-}
-```
+### React Router 7 Application
+The application is built with React Router 7 and currently includes:
 
-## 🔐 Authentication Endpoints
-
-### Register User
+#### Available Routes
 ```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "username": "string (3-50 chars, alphanumeric + underscore)",
-  "email": "string (valid email)",
-  "password": "string (min 8 chars)"
-}
+GET /                    # React Router application (Welcome page)
+GET /favicon.ico         # Favicon file
+GET /static/*           # Static assets (images, etc.)
 ```
 
-**Response (201)**:
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "uuid",
-      "username": "string",
-      "email": "string",
-      "created_at": "timestamp"
-    },
-    "token": "jwt_token"
-  }
-}
+#### Server Architecture
+```typescript
+// server/index.ts
+export const server = new Hono();
+
+server.use(contextMiddleware);     // Request context management
+server.use(systemsMiddleware);     // Database integration
+server.use("/favicon.ico", serveStatic({ path: "./static/favicon.ico" }));
+server.use("/static/*", serveStatic({ root: "." }));
+
+export default await createHonoServer({
+  app: server,
+});
 ```
 
-### Login User
+## 📋 Available Endpoints
+
+### Main Application
 ```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "string",
-  "password": "string"
-}
+GET /
 ```
+**Description**: Main React Router application with SSR  
+**Response**: HTML page with React application (currently shows welcome page)  
+**Content-Type**: `text/html`
 
-**Response (200)**:
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "uuid",
-      "username": "string", 
-      "email": "string",
-      "last_login_at": "timestamp"
-    },
-    "token": "jwt_token"
-  }
-}
-```
+**Example Response**: HTML document with React Router 7 application
 
-### Verify Token
+### Static Assets
 ```http
-GET /api/auth/verify
-Authorization: Bearer <token>
+GET /favicon.ico
 ```
+**Description**: Site favicon  
+**Response**: Favicon image file  
+**Content-Type**: `image/x-icon`
 
-**Response (200)**:
-```json
-{
-  "success": true,
-  "data": {
-    "valid": true,
-    "user_id": "uuid",
-    "expires_at": "timestamp"
-  }
-}
-```
-
-### Get Current User
 ```http
-GET /api/auth/me
-Authorization: Bearer <token>
+GET /static/{filename}
+```
+**Description**: Static file serving for assets  
+**Path Parameters**:
+- `filename`: Name of the static file
+**Response**: Static files (images, CSS, JS, etc.)  
+**Available Files**:
+- `/static/logo-light.png` - Light theme logo
+- `/static/logo-dark.png` - Dark theme logo
+
+## 🗄️ Database Integration
+
+### Current Schema
+The application includes a users table schema but no API endpoints to interact with it yet:
+
+```sql
+CREATE TABLE "users" (
+  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "username" varchar(50) UNIQUE NOT NULL,
+  "email" varchar(255) UNIQUE NOT NULL, 
+  "password_hash" varchar(255) NOT NULL,
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL,
+  "last_login_at" timestamp,
+  "email_verified_at" timestamp
+);
 ```
 
-**Response (200)**:
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "username": "string",
-    "email": "string",
-    "created_at": "timestamp",
-    "last_login_at": "timestamp",
-    "email_verified_at": "timestamp"
-  }
-}
+### Database Access
+The database is available in server middleware via:
+```typescript
+// Available in Hono context
+c.systems.db // Drizzle database instance
 ```
 
-## 👥 User Management Endpoints
+## ❌ Not Yet Implemented
 
-### Get User by ID
+### Authentication Endpoints (Planned)
 ```http
-GET /api/users/:id
+POST /api/auth/register  # User registration (not implemented)
+POST /api/auth/login     # User login (not implemented)
+POST /api/auth/logout    # User logout (not implemented)
+GET  /api/auth/me        # Current user info (not implemented)
 ```
 
-**Response (200)**:
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "username": "string",
-    "created_at": "timestamp"
-  }
-}
-```
-
-### Get User by Username
+### Content Management Endpoints (Planned)
 ```http
-GET /api/users/username/:username
+GET    /api/posts        # List posts (not implemented)
+POST   /api/posts        # Create post (not implemented)
+GET    /api/posts/:id    # Get post (not implemented)
+PUT    /api/posts/:id    # Update post (not implemented)
+DELETE /api/posts/:id    # Delete post (not implemented)
 ```
 
-**Response (200)**:
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "username": "string",
-    "created_at": "timestamp"
-  }
-}
-```
-
-### Update Profile
+### User Management Endpoints (Planned)
 ```http
-PATCH /api/users/profile
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "username": "string (optional)",
-  "email": "string (optional)"
-}
+GET    /api/users/:id    # Get user profile (not implemented)
+PUT    /api/users/:id    # Update user profile (not implemented)
 ```
 
-**Response (200)**:
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "username": "string",
-    "email": "string",
-    "updated_at": "timestamp"
-  }
-}
-```
-
-## 📝 Posts Endpoints (Planned)
-
-### List Posts
+### Media Upload Endpoints (Planned)
 ```http
-GET /api/posts?page=1&limit=20&tag=example
+POST   /api/upload       # Upload media (not implemented)
+GET    /api/media/:id    # Get media (not implemented)
 ```
 
-### Get Post
-```http
-GET /api/posts/:id
-```
+## 🧪 Testing the Current API
 
-### Create Post
-```http
-POST /api/posts
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "title": "string",
-  "content": "string",
-  "tags": ["string"],
-  "visibility": "public|private|paid",
-  "nsfw": false
-}
-```
-
-### Update Post
-```http
-PATCH /api/posts/:id
-Authorization: Bearer <token>
-```
-
-### Delete Post
-```http
-DELETE /api/posts/:id
-Authorization: Bearer <token>
-```
-
-## 🎭 Media Endpoints (Planned)
-
-### Upload Media
-```http
-POST /api/media/upload
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-
-file: File
-```
-
-### Get Media
-```http
-GET /api/media/:id
-```
-
-### Serve Media File
-```http
-GET /api/media/:id/file
-```
-
-### Generate Thumbnail
-```http
-GET /api/media/:id/thumbnail?size=200x200
-```
-
-## 🔧 System Endpoints
-
-### Health Check
-```http
-GET /health
-```
-
-**Response (200)**:
-```json
-{
-  "status": "ok",
-  "timestamp": "timestamp",
-  "uptime": "seconds"
-}
-```
-
-### API Information
-```http
-GET /api
-```
-
-**Response (200)**:
-```json
-{
-  "name": "Open Fans API",
-  "version": "1.0.0",
-  "endpoints": ["list of available endpoints"]
-}
-```
-
-## 🛡️ Security & Rate Limiting
-
-### Rate Limits
-- **Default**: 100 requests per 15 minutes
-- **Auth endpoints**: 5 requests per 15 minutes
-- **Upload endpoints**: 10 uploads per hour
-- **Read operations**: 1000 requests per hour
-
-### Security Headers
-- `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: DENY`
-- `X-XSS-Protection: 1; mode=block`
-- `Strict-Transport-Security: max-age=31536000`
-
-### CORS Policy
-- **Development**: All origins allowed
-- **Production**: Configured origins only
-
-## 📊 Error Codes
-
-### Authentication Errors
-- `AUTH_REQUIRED` - Authentication required
-- `INVALID_TOKEN` - JWT token invalid or expired
-- `INVALID_CREDENTIALS` - Login credentials incorrect
-- `USER_EXISTS` - User already exists (registration)
-
-### Validation Errors
-- `VALIDATION_ERROR` - Request validation failed
-- `MISSING_FIELD` - Required field missing
-- `INVALID_FORMAT` - Field format invalid
-
-### Authorization Errors
-- `FORBIDDEN` - Access denied
-- `NOT_OWNER` - Resource not owned by user
-
-### Resource Errors
-- `NOT_FOUND` - Resource not found
-- `ALREADY_EXISTS` - Resource already exists
-
-### System Errors
-- `INTERNAL_ERROR` - Server error
-- `RATE_LIMITED` - Rate limit exceeded
-
-## 📝 Request/Response Examples
-
-### Successful User Registration
+### Manual Testing
 ```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser",
-    "email": "test@example.com", 
-    "password": "password123"
-  }'
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "username": "testuser",
-      "email": "test@example.com",
-      "created_at": "2024-01-01T00:00:00Z"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
-
-### Error Response Example
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username": "a", "email": "invalid", "password": "123"}'
-```
-
-**Response (400)**:
-```json
-{
-  "success": false,
-  "data": null,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Username must be 3-50 characters, email must be valid, password must be at least 8 characters"
-  }
-}
-```
-
-## 🧪 Testing with curl
-
-### Complete Authentication Flow
-```bash
-# 1. Register
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"testuser","email":"test@example.com","password":"password123"}'
-
-# 2. Login (save token from response)
-TOKEN=$(curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password123"}' \
-  | jq -r '.data.token')
-
-# 3. Access protected endpoint
-curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:3000/api/auth/me
-
-# 4. Update profile
-curl -X PATCH http://localhost:3000/api/users/profile \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"username":"newusername"}'
-```
-
-## 🔄 API Versioning
-
-### Current Version
-- **Version**: 1.0.0
-- **Prefix**: `/api` (no version in URL)
-
-### Future Versioning
-- **Strategy**: URL versioning (`/api/v2/`)
-- **Backwards Compatibility**: Previous versions maintained
-- **Deprecation**: 6-month notice before removal
-
-## 📈 Monitoring & Logging
-
-### Request Logging
-All requests logged with:
-- Timestamp
-- Method and path
-- User ID (if authenticated)
-- Response status
-- Response time
-
-### Error Tracking
-- All errors logged with stack traces
-- Rate limit violations tracked
-- Failed authentication attempts monitored
-
-## 🚀 Development
-
-### Starting API Server
-```bash
-# Full development (frontend + API)
+# Start development server
 npm run dev
 
-# API only
-npm run dev:api-only
+# Test main application
+curl http://localhost:3000/
+# Returns HTML with React Router application
+
+# Test favicon
+curl -I http://localhost:3000/favicon.ico
+# Returns 200 OK with image/x-icon content-type
+
+# Test static assets
+curl -I http://localhost:3000/static/logo-light.png
+# Returns 200 OK with image/png content-type
+
+# Test non-existent routes (React Router handles these)
+curl http://localhost:3000/non-existent
+# Returns HTML with React Router application (client-side routing)
 ```
 
-### API Server Configuration
-- **Port**: 3001 (API only) or 3000 (unified)
-- **Environment**: Development/Production modes
-- **Database**: PGlite (dev) / PostgreSQL (prod)
+### Database Testing
+```bash
+# Reset and setup database
+npm run db:reset
 
-### Adding New Endpoints
-1. Create handler in `server/api/`
-2. Add to route exports
-3. Include in main server
-4. Test with curl/Postman
-5. Update this documentation
+# Open database browser to view schema
+npm run db:studio
+
+# The users table exists but has no data or API to interact with it
+```
+
+## 🔧 Server Middleware
+
+### Context Middleware
+Provides request ID tracking and context management:
+```typescript
+// Adds unique request ID to headers
+c.req.header('X-Request-Id') // Available in routes
+```
+
+### Systems Middleware  
+Provides database access:
+```typescript
+// Makes database available in context
+c.systems.db // Drizzle ORM instance
+```
+
+### Static File Middleware
+Serves static assets from the `/static` directory and favicon.
+
+## 🚀 Development Status
+
+### Current Capabilities
+- ✅ Serve React Router 7 application with SSR
+- ✅ Serve static assets (images, favicon)
+- ✅ Database schema definition (users table)
+- ✅ Middleware system for future expansion
+- ✅ Request context management
+- ✅ Hot module replacement during development
+
+### Missing Core Features
+- ❌ Authentication system
+- ❌ API endpoints for data operations
+- ❌ User registration/login
+- ❌ Content management
+- ❌ File upload handling
+- ❌ Error handling middleware
+- ❌ Validation middleware
+- ❌ Rate limiting
+- ❌ CORS configuration
+
+## 🎯 Next Development Steps
+
+1. **Implement Authentication**:
+   - Add JWT middleware
+   - Create `/api/auth/*` endpoints
+   - Implement password hashing with bcryptjs
+
+2. **Add API Structure**:
+   - Create `/api` route prefix
+   - Add error handling middleware
+   - Implement request validation
+
+3. **User Management**:
+   - User registration endpoint
+   - User login endpoint
+   - Profile management endpoints
+
+4. **Content System**:
+   - Posts schema and endpoints
+   - Media upload system
+   - Content CRUD operations
+
+## 📖 Usage Examples
+
+### Current Usage (React Router App)
+```bash
+# Visit the application
+open http://localhost:3000
+
+# View static assets
+open http://localhost:3000/static/logo-light.png
+```
+
+### Future Usage (When API is implemented)
+```javascript
+// Registration (planned)
+const response = await fetch('/api/auth/register', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    username: 'user123',
+    email: 'user@example.com', 
+    password: 'securepassword'
+  })
+});
+
+// Login (planned)
+const loginResponse = await fetch('/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'securepassword'
+  })
+});
+```
+
+## 🔍 Error Responses
+
+### Current Behavior
+- **404 for API routes**: Returns React Router application (no API endpoints exist)
+- **404 for static files**: Returns 404 Not Found
+- **Server errors**: Basic Hono error handling
+
+### Future Error Format (Planned)
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid email format",
+    "details": {
+      "field": "email",
+      "value": "invalid-email"
+    }
+  },
+  "timestamp": "2024-01-01T00:00:00Z",
+  "path": "/api/auth/register"
+}
+```
 
 ---
 
-This API provides a solid foundation for content publishing with authentication, user management, and extensibility for future features like posts, media, and federation protocols.
+This API documentation reflects the current minimal state of the application. The foundation is solid with React Router 7, Hono server, and PGlite database, but API endpoints for user management, authentication, and content operations are not yet implemented. Check the [ROADMAP.md](./ROADMAP.md) for planned API development timeline.

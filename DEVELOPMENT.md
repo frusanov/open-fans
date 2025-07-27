@@ -11,7 +11,7 @@ Complete setup and development guide for Open Fans Platform - a censorship-resis
 ### Setup (30 seconds)
 ```bash
 # Clone and install
-git clone <your-repo-url>
+git clone https://github.com/your-username/open-fans
 cd open-fans
 npm install
 
@@ -29,15 +29,15 @@ Visit **http://localhost:3000** - both frontend and API are ready!
 ### Unified Development Server
 ```
 Single Port (3000) → Hono Server → {
-  Frontend Routes: Remix SSR
+  Frontend Routes: React Router 7 SSR
   API Routes: /api/* endpoints  
-  Static Assets: /public/*
+  Static Assets: /static/*
   HMR: Real-time updates
 }
 ```
 
 ### Technology Stack
-- **Frontend**: React + Remix (SSR)
+- **Frontend**: React + React Router 7 (SSR)
 - **Backend**: Hono (runtime-agnostic)
 - **Database**: PGlite (dev) → PostgreSQL (prod)
 - **ORM**: Drizzle with TypeScript
@@ -48,18 +48,21 @@ Single Port (3000) → Hono Server → {
 
 ```
 open-fans/
-├── app/                    # Remix frontend
-│   ├── routes/            # Frontend routes
-│   ├── components/        # React components
-│   └── lib/              # Frontend utilities
+├── app/                    # React Router 7 frontend
+│   ├── routes.ts          # Route configuration
+│   ├── index.tsx          # Main route
+│   ├── root.tsx           # Root component
+│   ├── welcome/           # Components
+│   └── app.css           # Styles
 ├── server/                # Hono API server
-│   ├── api/              # API endpoints
 │   ├── middleware/       # Server middleware
 │   └── index.ts          # Main server
 ├── lib/                   # Shared code
-│   └── schema/           # Database schemas
+│   ├── schema/           # Database schemas
+│   ├── context.ts        # Context utilities
+│   └── db.ts             # Database connection
 ├── components/           # Shared UI components
-└── public/              # Static assets
+└── static/              # Static assets
 ```
 
 ## 🗄️ Database Development
@@ -92,7 +95,7 @@ npm run db:reset
 
 ### Current Schema
 
-#### Users Table
+#### Users Table (Defined but not used in auth yet)
 ```sql
 CREATE TABLE "users" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -105,6 +108,8 @@ CREATE TABLE "users" (
   "email_verified_at" timestamp
 );
 ```
+
+> **Note**: This schema is defined but authentication is not yet implemented.
 
 #### Adding New Tables
 ```typescript
@@ -125,27 +130,29 @@ export * from "./posts";
 
 ### Frontend HMR (Instant)
 - **React components**: Updates without losing state
-- **Routes**: New routes available immediately
+- **Routes**: Route configuration updates immediately
 - **Styles**: TailwindCSS updates in real-time
 
 ### API HMR (Auto-restart)
-- **Route handlers**: Server restarts on changes
-- **Middleware**: Updates applied immediately  
+- **Server middleware**: Server restarts on changes
 - **Database schema**: Live schema updates
+- **Static file serving**: Updates applied immediately
 
 ### HMR Triggers
 ```bash
 # Frontend (instant update)
 app/**/*.tsx           # Components and routes
-app/**/*.ts           # Frontend utilities
+app/routes.ts          # Route configuration
+app/**/*.css           # Styles
 
 # Backend (server restart)  
-server/**/*.ts        # API routes and middleware
-lib/schema/*.ts       # Database schema
+server/**/*.ts         # Server middleware
+lib/schema/*.ts        # Database schema
 
 # Full restart
-vite.config.ts        # Build configuration
-.env                  # Environment variables
+vite.config.ts         # Build configuration
+react-router.config.ts # React Router configuration
+.env                   # Environment variables
 ```
 
 ## 🛠️ Development Commands
@@ -156,7 +163,7 @@ npm run dev              # Unified dev server (frontend + API)
 npm run build           # Production build
 npm run start           # Production server
 npm run lint            # Code linting
-npm run typecheck       # TypeScript validation
+npm run typecheck       # TypeScript + React Router type generation
 ```
 
 ### Database Operations
@@ -169,24 +176,25 @@ npm run db:reset        # Fresh database
 
 ### API Only (Optional)
 ```bash
-npm run dev:api-only    # API server only
-npm run start:api-only  # Production API
+npm run dev:api-only    # Hono server only (no React Router)
+npm run start:api-only  # Production Hono server
 ```
 
 ## 🔧 Development Workflow
 
 ### 1. Frontend Development
 ```bash
-# Edit files in app/ directory
+# Edit components in app/ directory
+# Configure routes in app/routes.ts
 # Changes reflect instantly with HMR
 # State preservation in React components
 ```
 
-### 2. API Development  
+### 2. Server Development  
 ```bash
-# Edit files in server/ directory
+# Edit server middleware in server/ directory
 # Server restarts automatically
-# New endpoints available immediately
+# Add new Hono middleware as needed
 ```
 
 ### 3. Database Development
@@ -196,12 +204,14 @@ npm run db:push        # Apply changes
 npm run db:studio      # View data
 ```
 
-### 4. Adding Features
+### 4. Adding Features (Future)
 ```bash
-# 1. Design database schema
-# 2. Create API endpoints
-# 3. Build frontend components
-# 4. Test with HMR feedback
+# 1. Design database schema in lib/schema/
+# 2. Create API endpoints (to be implemented)
+# 3. Add server middleware if needed
+# 4. Configure routes in app/routes.ts
+# 5. Build frontend components
+# 6. Test with HMR feedback
 ```
 
 ## 🧪 Testing
@@ -220,20 +230,23 @@ test("user creation", async () => {
 });
 ```
 
-### API Testing
+### Current API Testing
 ```bash
-# Health check
-curl http://localhost:3000/health
+# Test main React Router route
+curl http://localhost:3000/
 
-# Register user
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"test","email":"test@example.com","password":"pass123"}'
+# Test static assets
+curl http://localhost:3000/static/favicon.ico
+curl http://localhost:3000/favicon.ico
+
+# No other API endpoints are implemented yet
 ```
 
 ## 🔐 Environment Configuration
 
-Create `.env` file:
+Currently no `.env` file is required as authentication is not implemented. The database path is configured in `drizzle.config.ts`.
+
+Future environment variables (when authentication is implemented):
 ```bash
 NODE_ENV=development
 SESSION_SECRET=your-session-secret
@@ -272,7 +285,7 @@ lsof -i :3000
 ### Performance Tips
 - Use `~/` imports for clean paths
 - Exclude large directories from file watching
-- Enable bundle analysis: `npm run build -- --analyze`
+- Enable bundle analysis: Check Vite configuration for bundle analysis options
 
 ## 🚀 Production Migration
 
@@ -312,9 +325,10 @@ Creates optimized bundles:
 
 ### Development Flow
 1. Start with database schema
-2. Build API endpoints first
-3. Create reusable UI components
-4. Maintain type safety throughout
+2. Configure routes in app/routes.ts
+3. Build server middleware
+4. Create reusable UI components
+5. Maintain type safety throughout
 
 ### Performance
 1. Use dynamic imports for heavy components
@@ -341,7 +355,7 @@ npm run db:push              # Direct schema application
 
 # Production  
 npm run db:generate          # Generate migration files
-npm run db:migrate           # Apply versioned migrations
+drizzle-kit migrate          # Apply versioned migrations (manual command)
 ```
 
 ## 🌟 Benefits Summary
@@ -366,3 +380,26 @@ npm run db:migrate           # Apply versioned migrations
 ---
 
 This development environment provides the fastest possible development experience while maintaining a clear path to production deployment. The PGlite + HMR combination enables rapid iteration with professional-grade tooling.
+
+## 🚧 Current Implementation Status
+
+### What's Working
+- ✅ React Router 7 with SSR and file-based routing
+- ✅ Hono server with middleware system
+- ✅ PGlite database with Drizzle ORM
+- ✅ Users table schema defined
+- ✅ Static file serving (/static/*, /favicon.ico)
+- ✅ TypeScript throughout with type generation
+- ✅ Hot module replacement for both frontend and server
+- ✅ Database browser (npm run db:studio)
+
+### What's Not Yet Implemented
+- ❌ Authentication system (JWT, login, register)
+- ❌ API endpoints (/api/* routes)
+- ❌ User registration/login UI
+- ❌ Content management (posts, media)
+- ❌ Payment/monetization features
+- ❌ Federation protocols
+- ❌ Advanced security features
+
+This is a solid foundation ready for feature development. The next major milestone is implementing the authentication system.

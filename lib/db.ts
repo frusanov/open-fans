@@ -3,7 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import * as schema from "./schema";
 
-const client = new PGlite(join(__dirname, "../tmp/db"));
+const client = new PGlite(join(process.cwd(), "./tmp/db"));
 
 export const db = drizzle({
   client,
